@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="theme-color" content="#A83228">
+  <title>阿深 — 泰式料理菜單</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:       #A83228;
+      --primary-mid:   #8A261D;
+      --primary-dark:  #5C1710;
+      --primary-light: #FAEDEB;
+      --gold:          #C89320;
+      --bg:            #F8F6F3;
+      --card:          #FFFFFF;
+      --text:          #1A1714;
+      --text-sub:      #534F4B;
+      --text-muted:    #928E8A;
+      --border:        #E9E5DF;
+      --emoji-bg:      #FFF5EC;
+      --radius:        10px;
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Sticky Header ─────────────────────────────── */
+    .sticky-header {
+      position: fixed;
+      top: 0;
+      left: 0; right: 0;
+      max-width: 430px;
+      margin: 0 auto;
+      z-index: 100;
+      background: #FFFFFF;
+      box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .lang-bar {
+      display: flex;
+      gap: 6px;
+      padding: 8px 12px;
+      background: var(--primary);
+    }
+
+    .lang-btn {
+      flex: 1;
+      padding: 6px 2px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .lang-btn.active {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      border-color: rgba(255,255,255,0.55);
+    }
+
+    .cat-tabs {
+      display: flex;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+
+    .cat-tab {
+      flex: 1;
+      min-width: 68px;
+      padding: 11px 4px 9px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .cat-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* ── Page Content ──────────────────────────────── */
+    .page-content { padding-top: 0; /* set via JS */ }
+
+    /* ── Store Hero ────────────────────────────────── */
+    .store-hero {
+      background: linear-gradient(150deg, var(--primary) 0%, var(--primary-mid) 45%, var(--primary-dark) 100%);
+      padding: 44px 24px 36px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .store-hero::before {
+      content: ''; position: absolute;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      top: -60px; right: -40px;
+    }
+    .store-hero::after {
+      content: ''; position: absolute;
+      width: 140px; height: 140px; border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      bottom: -40px; left: -20px;
+    }
+    .hero-ornament {
+      font-size: 28px;
+      margin-bottom: 10px;
+      opacity: 0.85;
+      letter-spacing: 8px;
+    }
+    .store-name {
+      font-size: 58px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: 0.18em;
+      line-height: 1;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .store-tagline {
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
+      letter-spacing: 0.06em;
+      position: relative;
+    }
+
+    /* ── Store Info Bar ─────────────────────────────── */
+    .store-info-bar {
+      background: #FFFFFF;
+      padding: 14px 18px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .store-info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.55;
+    }
+    .info-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+    /* ── Menu Sections ──────────────────────────────── */
+    .menu-main { padding-bottom: 48px; }
+
+    .menu-section { margin-top: 12px; }
+
+    .section-header {
+      padding: 0 16px 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Item Card ──────────────────────────────────── */
+    .item-card {
+      display: flex;
+      background: var(--card);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s;
+      position: relative;
+    }
+    .item-card:active { background: #F5F1ED; }
+
+    .card-media {
+      width: 84px;
+      min-height: 84px;
+      background: var(--emoji-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      flex-shrink: 0;
+      line-height: 1;
+      position: relative;
+    }
+    .card-media img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .card-body {
+      flex: 1;
+      padding: 13px 14px 13px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      min-width: 0;
+    }
+    .card-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.35;
+      text-wrap: pretty;
+    }
+
+    /* Prices */
+    .card-prices { display: flex; flex-direction: column; gap: 2px; }
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .price-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      min-width: 0;
+    }
+    .price-dots {
+      flex: 1;
+      border-bottom: 1px dotted var(--border);
+      margin-bottom: 2px;
+    }
+    .price-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+    }
+    .price-single {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .price-market { font-size: 13px; color: var(--text-muted); font-style: italic; }
+    .card-note { font-size: 11px; color: var(--text-muted); }
+
+    /* Tags */
+    .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+    .tag-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 500;
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+    .tag-R  { background: #FFF3CC; color: #7A5500; }
+    .tag-1  { background: #FFE9DF; color: #B53000; }
+    .tag-2  { background: #FFE9DF; color: #B53000; }
+    .tag-3  { background: #FFDDD0; color: #991000; }
+    .tag-P  { background: #EEF0FF; color: #3A3FAA; }
+    .tag-B  { background: #F0EFEE; color: #3E3B38; }
+    .tag-L  { background: #F5EEFF; color: #6B3B9A; }
+    .tag-V  { background: #E8F5E9; color: #276B27; }
+    .tag-H  { background: #E6F0EE; color: #1A5C47; }
+
+    /* ── Modal ──────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(20,15,12,0.6);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 430px;
+      background: #FFFFFF;
+      border-radius: 20px 20px 0 0;
+      max-height: 92vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.32, 1.08, 0.6, 1);
+      padding-bottom: max(28px, env(safe-area-inset-bottom, 0px));
+      will-change: transform;
+    }
+    .modal-overlay.open .modal-sheet { transform: translateY(0); }
+
+    .modal-handle-row { padding: 12px 0 6px; text-align: center; }
+    .modal-handle {
+      display: inline-block;
+      width: 36px; height: 4px;
+      background: #D8D4CF;
+      border-radius: 2px;
+    }
+
+    .modal-close-row {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 16px 4px;
+    }
+    .modal-close-btn {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: #F0EDE9;
+      color: var(--text-sub);
+      font-size: 17px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .modal-media-wrap {
+      width: 100%;
+      height: 210px;
+      background: var(--emoji-bg);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .modal-emoji {
+      font-size: 100px;
+      line-height: 1;
+      user-select: none;
+      display: block;
+      transform-origin: center center;
+    }
+    .modal-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform-origin: center center;
+    }
+
+    .modal-body { padding: 18px 20px 0; }
+
+    .modal-name {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    .modal-prices {
+      display: flex; flex-direction: column; gap: 7px;
+      margin-bottom: 16px;
+    }
+    .modal-price-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 9px 13px;
+      background: var(--bg);
+      border-radius: 8px;
+    }
+    .modal-price-label { font-size: 14px; color: var(--text-sub); }
+    .modal-price-value { font-size: 17px; font-weight: 700; color: var(--primary); }
+    .modal-price-single { font-size: 22px; font-weight: 700; color: var(--primary); }
+    .modal-price-market { font-size: 15px; color: var(--text-muted); font-style: italic; }
+
+    .modal-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 16px; }
+    .modal-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 11px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 500;
+    }
+
+    .modal-divider { height: 1px; background: var(--border); margin: 4px 0 14px; }
+
+    .modal-field-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .modal-field-text {
+      font-size: 14px;
+      color: var(--text-sub);
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+
+    /* ── Scroll-to-section offset ───────────────────── */
+    .menu-section { scroll-margin-top: 96px; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Sticky Header ──────────────────────────────── -->
+  <div class="sticky-header" id="sticky-header">
+    <div class="lang-bar" id="lang-bar">
+      <button class="lang-btn active" data-lang="zh">繁中</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="ja">日本語</button>
+      <button class="lang-btn" data-lang="ko">한국어</button>
+    </div>
+    <nav class="cat-tabs" id="cat-tabs">
+      <button class="cat-tab active" data-cat="main">主餐</button>
+      <button class="cat-tab" data-cat="side">單點</button>
+      <button class="cat-tab" data-cat="dessert">甜點</button>
+      <button class="cat-tab" data-cat="drink">飲料</button>
+    </nav>
+  </div>
+
+  <!-- ── Page Content ────────────────────────────────── -->
+  <div class="page-content" id="page-content">
+
+    <!-- Store Hero -->
+    <header class="store-hero">
+      <div class="hero-ornament">✦ ✦ ✦</div>
+      <h1 class="store-name">阿深</h1>
+      <p class="store-tagline" id="store-tagline">道地泰式家常料理</p>
+    </header>
+
+    <!-- Store Info Bar (hidden if no address/phone) -->
+    <div class="store-info-bar" id="store-info-bar" style="display:none">
+      <div class="store-info-row" id="info-address" style="display:none">
+        <span class="info-icon">📍</span>
+        <span id="info-address-text"></span>
+      </div>
+      <div class="store-info-row" id="info-phone" style="display:none">
+        <span class="info-icon">📞</span>
+        <span id="info-phone-text"></span>
+      </div>
+    </div>
+
+    <!-- Menu Sections -->
+    <main class="menu-main" id="menu-main">
+      <section class="menu-section" id="section-main" data-screen-label="01 主餐類">
+        <div class="section-header">
+          <span class="section-title" id="title-main">主餐類</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="item-list" id="list-main"></div>
+      </section>
+
+      <section class="menu-section" id="section-side" data-screen-label="02 單點類">
+        <div class="section-header">
+          <span class="section-title" id="title-side">單點類</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="item-list" id="list-side"></div>
+      </section>
+
+      <section class="menu-section" id="section-dessert" data-screen-label="03 甜點類">
+        <div class="section-header">
+          <span class="section-title" id="title-dessert">甜點類</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="item-list" id="list-dessert"></div>
+      </section>
+
+      <section class="menu-section" id="section-drink" data-screen-label="04 飲料類">
+        <div class="section-header">
+          <span class="section-title" id="title-drink">飲料類</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="item-list" id="list-drink"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ── Modal Overlay ────────────────────────────────── -->
+  <div class="modal-overlay" id="modal-overlay" aria-hidden="true" role="dialog">
+    <div class="modal-sheet" id="modal-sheet">
+      <div class="modal-handle-row"><span class="modal-handle"></span></div>
+      <div class="modal-close-row">
+        <button class="modal-close-btn" id="modal-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="menu-data.js"></script>
+  <script src="menu-app.js"></script>
+</body>
+</html>
